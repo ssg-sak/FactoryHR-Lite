@@ -29,6 +29,7 @@ Employee / Attendance
 | PDF | 200, `application/pdf`, 203,751 bytes, KPI 46 / 4 / 32.8 / 0.35 / 3.46 / 6.92 일치 |
 | CSV | UTF-8 BOM, 직원·근태 실제 생성 |
 | AI | `GEMINI_API_KEY` 없음 → `503`, PDF/CSV/화면은 정상 |
+| GitHub Actions | **passed** (main push, backend + frontend) |
 | Docker Compose | 이 환경에 Docker CLI 없음. **미실행** |
 | Live Demo | Render 계정/키 없음. `render.yaml`만 준비 |
 
