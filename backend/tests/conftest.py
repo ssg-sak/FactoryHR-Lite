@@ -24,6 +24,10 @@ if not (make_url(TEST_DATABASE_URL).database or "").endswith("_test"):
 
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 
+os.environ.setdefault("JWT_SECRET", "test-only-secret-not-for-production")
+os.environ.setdefault("JWT_ALGORITHM", "HS256")
+os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+
 from app.main import app  # noqa: E402
 from app.models import (  # noqa: E402
     Attendance,
@@ -32,7 +36,10 @@ from app.models import (  # noqa: E402
     Factory,
     ProductionLine,
     Shift,
+    User,
+    UserRole,
 )
+from app.services.password_service import hash_password  # noqa: E402
 
 test_engine = create_engine(TEST_DATABASE_URL, pool_pre_ping=True)
 TestSessionLocal = sessionmaker(
@@ -54,7 +61,7 @@ def db(migrated_database: None) -> Generator[Session, None, None]:
         connection.execute(
             text(
                 "TRUNCATE TABLE attendance, employees, production_lines, "
-                "departments, factories, shifts RESTART IDENTITY CASCADE"
+                "departments, factories, shifts, users RESTART IDENTITY CASCADE"
             )
         )
 
@@ -133,12 +140,58 @@ def db(migrated_database: None) -> Generator[Session, None, None]:
                 ),
             ]
         )
+        session.add_all(
+            [
+                User(
+                    username="admin",
+                    password_hash=hash_password("admin-test"),
+                    role=UserRole.ADMIN.value,
+                    is_active=True,
+                ),
+                User(
+                    username="viewer",
+                    password_hash=hash_password("viewer-demo"),
+                    role=UserRole.VIEWER.value,
+                    is_active=True,
+                ),
+                User(
+                    username="inactive",
+                    password_hash=hash_password("inactive-test"),
+                    role=UserRole.VIEWER.value,
+                    is_active=False,
+                ),
+            ]
+        )
         session.commit()
         yield session
 
 
+def _login(test_client: TestClient, username: str, password: str) -> str:
+    response = test_client.post(
+        "/auth/login", json={"username": username, "password": password}
+    )
+    assert response.status_code == 200, response.text
+    return response.json()["access_token"]
+
+
 @pytest.fixture()
 def client(db: Session) -> TestClient:
+    test_client = TestClient(app)
+    token = _login(test_client, "admin", "admin-test")
+    test_client.headers.update({"Authorization": f"Bearer {token}"})
+    return test_client
+
+
+@pytest.fixture()
+def viewer_client(db: Session) -> TestClient:
+    test_client = TestClient(app)
+    token = _login(test_client, "viewer", "viewer-demo")
+    test_client.headers.update({"Authorization": f"Bearer {token}"})
+    return test_client
+
+
+@pytest.fixture()
+def anonymous_client(db: Session) -> TestClient:
     return TestClient(app)
 
 

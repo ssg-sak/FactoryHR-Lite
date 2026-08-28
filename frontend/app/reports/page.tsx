@@ -10,7 +10,7 @@ import { FilterBar } from "@/components/filters/FilterBar";
 import { useWorkforceFilters } from "@/components/filters/WorkforceFilterContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorState, Spinner } from "@/components/ui/Feedback";
-import { api, reportDownloadUrl } from "@/lib/api";
+import { api, downloadReport } from "@/lib/api";
 import { KPI_DEFINITIONS } from "@/lib/constants";
 import { ApiError } from "@/lib/errors";
 import type { AIReportResponse } from "@/lib/types";
@@ -56,24 +56,33 @@ export default function ReportsPage() {
 
         <section className="rounded-md border border-slate-200 bg-white p-4">
           <div className="flex flex-wrap items-center gap-2">
-            <a
+            <button
+              type="button"
               className="rounded bg-teal-800 px-3.5 py-2 text-sm font-medium text-white"
-              href={reportDownloadUrl("/api/reports/workforce.pdf", filters)}
+              onClick={() => {
+                void downloadReport("/api/reports/workforce.pdf", filters);
+              }}
             >
               PDF 리포트 다운로드
-            </a>
-            <a
+            </button>
+            <button
+              type="button"
               className="rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
-              href={reportDownloadUrl("/api/reports/employees.csv", filters)}
+              onClick={() => {
+                void downloadReport("/api/reports/employees.csv", filters);
+              }}
             >
               직원 CSV
-            </a>
-            <a
+            </button>
+            <button
+              type="button"
               className="rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
-              href={reportDownloadUrl("/api/reports/attendance.csv", filters)}
+              onClick={() => {
+                void downloadReport("/api/reports/attendance.csv", filters);
+              }}
             >
               근태 CSV
-            </a>
+            </button>
             <span className="hidden h-6 w-px bg-slate-200 sm:block" aria-hidden="true" />
             <button
               type="button"

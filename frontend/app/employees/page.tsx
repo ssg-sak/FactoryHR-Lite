@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { EmployeeForm } from "@/components/employees/EmployeeForm";
 import { FilterBar } from "@/components/filters/FilterBar";
+import { useAuth } from "@/components/auth/AuthContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { EmptyState, ErrorState, Spinner } from "@/components/ui/Feedback";
 import { Modal } from "@/components/ui/Modal";
@@ -16,6 +17,7 @@ import { ApiError } from "@/lib/errors";
 import type { Employee, EmployeeWritePayload, WorkforceFilters } from "@/lib/types";
 
 export default function EmployeesPage() {
+  const { canWrite } = useAuth();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState<WorkforceFilters>({});
   const [name, setName] = useState("");
@@ -111,16 +113,18 @@ export default function EmployeesPage() {
               <option value="resigned">퇴사</option>
             </select>
           </label>
-          <button
-            type="button"
-            className="rounded bg-teal-800 px-3 py-2 text-sm text-white"
-            onClick={() => {
-              setFormError(null);
-              setEditor("create");
-            }}
-          >
-            직원 등록
-          </button>
+          {canWrite ? (
+            <button
+              type="button"
+              className="rounded bg-teal-800 px-3 py-2 text-sm text-white"
+              onClick={() => {
+                setFormError(null);
+                setEditor("create");
+              }}
+            >
+              직원 등록
+            </button>
+          ) : null}
         </div>
         {list.isLoading ? <Spinner /> : null}
         {list.error instanceof Error ? <ErrorState message={list.error.message} /> : null}
@@ -160,27 +164,31 @@ export default function EmployeesPage() {
                         <Link className="text-teal-800 underline" href={`/employees/${employee.id}`}>
                           상세
                         </Link>
-                        <button
-                          type="button"
-                          className="text-slate-700 underline"
-                          onClick={() => {
-                            setFormError(null);
-                            setEditor(employee);
-                          }}
-                        >
-                          수정
-                        </button>
-                        <button
-                          type="button"
-                          className="text-rose-700 underline"
-                          onClick={() => {
-                            if (window.confirm(`${employee.name} 직원을 삭제할까요?`)) {
-                              deleteMutation.mutate(employee.id);
-                            }
-                          }}
-                        >
-                          삭제
-                        </button>
+                        {canWrite ? (
+                          <>
+                            <button
+                              type="button"
+                              className="text-slate-700 underline"
+                              onClick={() => {
+                                setFormError(null);
+                                setEditor(employee);
+                              }}
+                            >
+                              수정
+                            </button>
+                            <button
+                              type="button"
+                              className="text-rose-700 underline"
+                              onClick={() => {
+                                if (window.confirm(`${employee.name} 직원을 삭제할까요?`)) {
+                                  deleteMutation.mutate(employee.id);
+                                }
+                              }}
+                            >
+                              삭제
+                            </button>
+                          </>
+                        ) : null}
                       </div>
                       {deleteMutation.error instanceof Error &&
                       deleteMutation.variables === employee.id ? (
