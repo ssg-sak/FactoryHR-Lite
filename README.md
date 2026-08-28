@@ -32,7 +32,7 @@ Employee / Attendance
 | CSV | UTF-8 BOM, 직원·근태 실제 생성 |
 | AI | 키 없음 → `503`. 모델은 `gemini-3.1-flash-lite` (`gemini-2.0-flash`는 2026-06-01 종료) |
 | GitHub Actions | **passed** (main push, backend + frontend) |
-| Docker Compose | Docker Desktop 설치됨. WSL2 미설치로 엔진 미기동 |
+| Docker Compose | **실행됨** (`docker compose up --build`). `/health` 200, KPI 46/4/32.8/1070, AI 200 |
 | Live Demo | [Web](https://factoryhr-frontend.onrender.com/) · [API `/health`](https://factoryhr-backend.onrender.com/health) |
 
 ## 목차
@@ -220,7 +220,7 @@ docker compose up --build
 
 http://localhost:3000 · API http://localhost:8000 · `/docs`
 
-Docker Desktop을 켠 뒤 `docker compose up --build` 합니다. Windows에서는 WSL2가 필요합니다.
+호스트 5432가 이미 쓰이면 Compose DB는 `5434:5432`로 엽니다. 컨테이너 안에서는 그대로 `db:5432`입니다.
 
 ### 로컬
 
