@@ -143,11 +143,15 @@ PDF·CSV는 백엔드가 파일로 내려줍니다.
 
 ## 4. 기술 스택
 
-**Frontend:** Next.js App Router, React, TypeScript, Tailwind, TanStack Query, React Hook Form, Zod, Recharts  
-**Backend:** Python, FastAPI, Pydantic, SQLAlchemy 2.x, psycopg  
-**Database:** PostgreSQL, Alembic  
-**Report / AI:** ReportLab, Matplotlib, Gemini (`httpx`)  
-**Test / DevOps:** Pytest, Vitest, Playwright(smoke), GitHub Actions, Docker Compose, Render Blueprint(`render.yaml`)
+| 영역 | 기술 | 이 프로젝트에서의 역할 |
+|---|---|---|
+| **Frontend** | Next.js App Router, React, TypeScript, Tailwind | 대시보드·직원·근태·리포트 화면과 타입 기반 UI 구성 |
+| **서버 상태 / Form** | TanStack Query, React Hook Form, Zod | API 조회·캐싱·갱신, 입력 폼 상태 관리와 사용자 입력 검증 |
+| **Visualization** | Recharts | 인력 구성·근태·잔업 등 대시보드 지표 시각화 |
+| **Backend** | Python, FastAPI, Pydantic, SQLAlchemy 2.x, psycopg | REST API, 요청·응답 검증, 비즈니스 로직과 PostgreSQL 접근 |
+| **Database** | PostgreSQL, Alembic | 직원·근태 데이터와 무결성 제약 저장, DB 스키마 변경 이력 관리 |
+| **Report / AI** | ReportLab, Matplotlib, Gemini (`httpx`) | PDF 보고서·차트 생성, 계산된 KPI 기반 AI 보조 요약 호출 |
+| **Test / DevOps** | Pytest, Vitest, Playwright(smoke), GitHub Actions, Docker Compose, Render Blueprint (`render.yaml`) | 백엔드·프론트·주요 사용자 흐름 검증, CI·개발환경·배포 설정 관리 |
 
 서버 데이터는 TanStack Query, 페이지 UI는 `useState`,
 대시보드·리포트가 공유하는 조회 조건만 Context입니다.
