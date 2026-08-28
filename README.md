@@ -1,5 +1,7 @@
 # FactoryHR Lite
 
+[Live Demo](https://factoryhr-frontend.onrender.com/) · [API `/health`](https://factoryhr-backend.onrender.com/health) · [Docs](https://factoryhr-backend.onrender.com/docs)
+
 제조업 직원·근태 데이터를 관리하고
 데이터 검증, 운영 KPI, PDF/CSV 리포트,
 AI 보조 요약을 제공하는 풀스택 HR 운영 웹서비스.
