@@ -28,9 +28,9 @@ Employee / Attendance
 | Alembic | `20260828_0002` (head), `alembic check` 통과 |
 | PDF | 로컬 200, 203,751 bytes. Live 200, 141,033 bytes. KPI 46 / 4 / 32.8 / 0.35 / 3.46 / 6.92 일치 |
 | CSV | UTF-8 BOM, 직원·근태 실제 생성 |
-| AI | 키 없음 → `503`. Live는 키 있음 → Gemini `502`. PDF/CSV/화면은 정상 |
+| AI | 키 없음 → `503`. 모델은 `gemini-3.1-flash-lite` (`gemini-2.0-flash`는 2026-06-01 종료) |
 | GitHub Actions | **passed** (main push, backend + frontend) |
-| Docker Compose | 이 환경에 Docker CLI 없음. **미실행** |
+| Docker Compose | Docker Desktop 설치됨. WSL2 미설치로 엔진 미기동 |
 | Live Demo | [Web](https://factoryhr-frontend.onrender.com/) · [API `/health`](https://factoryhr-backend.onrender.com/health) |
 
 ## 목차
@@ -218,7 +218,7 @@ docker compose up --build
 
 http://localhost:3000 · API http://localhost:8000 · `/docs`
 
-이 Windows 작업 환경에는 Docker CLI가 없어 compose 기동은 **실행하지 못했습니다**.
+Docker Desktop을 켠 뒤 `docker compose up --build` 합니다. Windows에서는 WSL2가 필요합니다.
 
 ### 로컬
 
@@ -324,7 +324,7 @@ Live:
 - 인증 없음
 - AI는 KPI 보조 요약. 노무 판단용이 아님
 - PDF 한글은 시스템 CJK 폰트(로컬: 맑은 고딕). Render 네이티브 인스턴스에는 CJK가 없어 Live PDF가 더 작음
-- Docker Compose는 이 Windows 환경에 CLI가 없어 미실행
+- `gemini-2.0-flash`는 2026-06-01 종료. 기본 모델은 `gemini-3.1-flash-lite`
 
 이후: 배치 이력, Admin/Viewer, HRIS 연동.
 
@@ -366,7 +366,8 @@ Live:
 문제: 테이블 dump는 없는 사실을 만들기 쉬움.  
 판단: 집계 JSON만 보냄.  
 구현: `cannot_conclude` 필수, 키 없으면 해당 API만 `503`.  
-결과: 키 없는 환경에서 PDF/CSV/대시보드는 그대로 동작.
+결과: 키 없는 환경에서 PDF/CSV/대시보드는 그대로 동작.  
+Live 502: `gemini-2.0-flash`가 2026-06-01 종료됨. 기본 모델을 `gemini-3.1-flash-lite`로 변경.
 
 **회귀 테스트.**  
 문제: 대시보드를 붙이며 기존 CRUD 계약을 깨기 쉬움.  

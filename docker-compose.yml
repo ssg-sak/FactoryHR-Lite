@@ -27,7 +27,7 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-factoryhr}:${POSTGRES_PASSWORD:-factoryhr}@db:5432/${POSTGRES_DB:-factoryhr}
       CORS_ORIGINS: '["http://localhost:3000"]'
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.1-flash-lite}
     ports:
       - "8000:8000"
     depends_on:

@@ -116,10 +116,17 @@ def generate_ai_summary(payload: dict[str, Any]) -> dict[str, list[str]]:
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail="Gemini API request failed") from exc
     if response.status_code >= 400:
-        raise HTTPException(
-            status_code=502,
-            detail="Gemini API returned an error. Check GEMINI_API_KEY and model name.",
-        )
+        message = ""
+        try:
+            err = response.json().get("error", {})
+            if isinstance(err, dict):
+                message = str(err.get("message") or "")
+        except (ValueError, TypeError):
+            message = ""
+        detail = "Gemini API returned an error. Check GEMINI_API_KEY and model name."
+        if message:
+            detail = f"Gemini API error ({response.status_code}): {message[:300]}"
+        raise HTTPException(status_code=502, detail=detail)
     try:
         data = response.json()
         text = data["candidates"][0]["content"]["parts"][0]["text"]
