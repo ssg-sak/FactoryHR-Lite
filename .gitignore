@@ -11,4 +11,7 @@ frontend/.next/
 frontend/out/
 frontend/coverage/
 frontend/*.tsbuildinfo
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
 .DS_Store
