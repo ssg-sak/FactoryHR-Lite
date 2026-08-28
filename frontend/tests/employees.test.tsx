@@ -1,0 +1,81 @@
+import type { ReactNode } from "react";
+import { screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import EmployeesPage from "@/app/employees/page";
+import { jsonResponse, renderWithQuery } from "./test-utils";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/employees",
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ children, href }: { children: ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
+
+describe("EmployeesPage", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("renders the employee table", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo) => {
+        const url = String(input);
+        if (url.includes("/api/departments") || url.includes("/api/factories") || url.includes("/api/shifts") || url.includes("/api/production-lines")) {
+          return jsonResponse([]);
+        }
+        if (url.includes("/api/employees")) {
+          return jsonResponse({
+            items: [
+              {
+                id: 1,
+                employee_number: "FHR-0001",
+                name: "김민준",
+                department_id: 1,
+                department_name: "생산",
+                factory_id: 1,
+                factory_name: "대구1공장",
+                production_line_id: 1,
+                production_line_name: "조립 A라인",
+                shift_id: 1,
+                shift_name: "주간조",
+                position: "사원",
+                hired_at: "2024-01-01",
+                resigned_at: null,
+                status: "active",
+                created_at: "2026-01-01T00:00:00",
+                updated_at: "2026-01-01T00:00:00",
+              },
+            ],
+            total: 1,
+            page: 1,
+            page_size: 20,
+          });
+        }
+        return jsonResponse({});
+      }),
+    );
+    renderWithQuery(<EmployeesPage />);
+    expect(await screen.findByText("FHR-0001")).toBeInTheDocument();
+    expect(screen.getByText("김민준")).toBeInTheDocument();
+    expect(screen.getByText("대구1공장")).toBeInTheDocument();
+  });
+
+  it("shows empty state when the list is empty", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo) => {
+        const url = String(input);
+        if (url.includes("/api/departments") || url.includes("/api/factories") || url.includes("/api/shifts") || url.includes("/api/production-lines")) {
+          return jsonResponse([]);
+        }
+        return jsonResponse({ items: [], total: 0, page: 1, page_size: 20 });
+      }),
+    );
+    renderWithQuery(<EmployeesPage />);
+    expect(await screen.findByText("선택한 조건에 해당하는 데이터가 없습니다.")).toBeInTheDocument();
+  });
+});
