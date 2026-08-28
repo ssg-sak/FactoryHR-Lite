@@ -23,15 +23,15 @@ Employee / Attendance
 | Seed | 직원 **50**, 근태 **1,070** (2026-07-29 ~ 2026-08-27) |
 | Backend pytest | **35 passed** in 11.35s |
 | Frontend vitest | **7 passed** |
-| Playwright smoke | **4 passed** in 12.4s |
+| Playwright smoke | **4 passed** (로컬 12.4s, Live Render 13.5s) |
 | lint / typecheck / build | passed (Next.js 15.5.24) |
 | Alembic | `20260828_0002` (head), `alembic check` 통과 |
-| PDF | 200, `application/pdf`, 203,751 bytes, KPI 46 / 4 / 32.8 / 0.35 / 3.46 / 6.92 일치 |
+| PDF | 로컬 200, 203,751 bytes. Live 200, 141,033 bytes. KPI 46 / 4 / 32.8 / 0.35 / 3.46 / 6.92 일치 |
 | CSV | UTF-8 BOM, 직원·근태 실제 생성 |
-| AI | `GEMINI_API_KEY` 없음 → `503`, PDF/CSV/화면은 정상 |
+| AI | 키 없음 → `503`. Live는 키 있음 → Gemini `502`. PDF/CSV/화면은 정상 |
 | GitHub Actions | **passed** (main push, backend + frontend) |
 | Docker Compose | 이 환경에 Docker CLI 없음. **미실행** |
-| Live Demo | Blueprint 준비됨. Render Apply 후 URL 기입 |
+| Live Demo | [Web](https://factoryhr-frontend.onrender.com/) · [API `/health`](https://factoryhr-backend.onrender.com/health) |
 
 ## 목차
 
@@ -277,15 +277,15 @@ npm run e2e
 
 Apply 화면에서 `GEMINI_API_KEY`는 비워 두어도 됩니다. 넣으면 Reports에서 AI 요약이 동작합니다.
 
-배포 후 확인할 것:
+Live:
 
-1. `https://<backend>.onrender.com/health` → `{"status":"ok","database":"connected"}`
-2. 프론트에서 `/dashboard` `/employees` `/attendance` `/reports` 한 번씩
-3. 첫 요청은 무료 플랜 cold start로 1~2분 걸릴 수 있음
+- Web: https://factoryhr-frontend.onrender.com/
+- API: https://factoryhr-backend.onrender.com/
+- Health: https://factoryhr-backend.onrender.com/health → `{"status":"ok","database":"connected"}`
+
+확인한 것: `/health` 200, dashboard KPI 46 / 4 / 32.8 / 0.35 / 3.46 / 6.92, 직원 50, 근태 1,070, Data Quality 위반 0, Playwright smoke 4 passed, PDF/CSV 200. 무료 플랜은 cold start가 있습니다.
 
 `DATABASE_URL`이 `postgres://`이면 `postgresql+psycopg://`로 바꿉니다. 프론트 공개 URL은 `FRONTEND_URL`로 CORS에 들어갑니다. Next.js는 Render `$PORT`를 사용합니다.
-
-Live Demo URL은 Apply가 끝난 뒤 이 README 표에 기입합니다.
 
 ---
 
@@ -323,11 +323,10 @@ Live Demo URL은 Apply가 끝난 뒤 이 README 표에 기입합니다.
 - 배치 이력 없음. 근태의 공장/라인/교대는 현재 배치
 - 인증 없음
 - AI는 KPI 보조 요약. 노무 판단용이 아님
-- PDF 한글은 시스템 CJK 폰트(이 환경: 맑은 고딕)
+- PDF 한글은 시스템 CJK 폰트(로컬: 맑은 고딕). Render 네이티브 인스턴스에는 CJK가 없어 Live PDF가 더 작음
 - Docker Compose는 이 Windows 환경에 CLI가 없어 미실행
-- Render live URL은 Blueprint Apply 후 기입
 
-이후: 배치 이력, Admin/Viewer, HRIS 연동, 배포 환경 E2E.
+이후: 배치 이력, Admin/Viewer, HRIS 연동.
 
 ---
 
