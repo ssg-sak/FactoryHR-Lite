@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 import jwt
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -87,6 +88,20 @@ def test_expired_jwt(anonymous_client: TestClient) -> None:
     )
     assert response.status_code == 401
     assert response.json()["detail"] == "Token has expired"
+
+
+def test_login_works_without_explicit_jwt_secret(
+    anonymous_client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "jwt_secret", "")
+    response = anonymous_client.post(
+        "/auth/login", json={"username": "admin", "password": "admin-test"}
+    )
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+    me = anonymous_client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert me.status_code == 200
+    assert me.json() == {"username": "admin", "role": "admin"}
 
 
 def test_health_is_public(anonymous_client: TestClient) -> None:

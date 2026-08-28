@@ -32,7 +32,7 @@ Employee / Attendance
 | GitHub Actions | main CI **success** ([run 33157470728](https://github.com/ssg-sak/FactoryHR-Lite/actions/runs/33157470728), 1m20s). PR #1도 [success](https://github.com/ssg-sak/FactoryHR-Lite/actions/runs/33157150339) |
 | Docker Compose | 2026-08-28 재빌드 확인. db `5434:5432`, API 8000, web 3000. `/health` 200, admin/viewer 로그인, viewer 쓰기 403 |
 | Authentication | Argon2 + JWT access. 공개 회원가입 없음. viewer/admin. `/signup` 없음 |
-| Live Demo | [Web](https://factoryhr-frontend.onrender.com/) · [API `/health`](https://factoryhr-backend.onrender.com/health). 인증 배포는 아래 Render 절 |
+| Live Demo | [Web](https://factoryhr-frontend.onrender.com/) · [로그인](https://factoryhr-frontend.onrender.com/login) · [API `/health`](https://factoryhr-backend.onrender.com/health). 데모 `viewer` / `viewer-demo` |
 
 ## 목차
 
@@ -312,25 +312,17 @@ $env:TEST_DATABASE_URL='postgresql+psycopg://factoryhr:factoryhr@127.0.0.1:5434/
 
 Apply 화면에서 `GEMINI_API_KEY`는 비워 두어도 됩니다. 넣으면 Reports에서 AI 요약이 동작합니다.
 `BOOTSTRAP_ADMIN_PASSWORD`는 Dashboard에서 직접 넣습니다(`sync: false`). 넣지 않으면 admin 계정이 만들어지지 않습니다.
-Demo viewer `viewer` / `viewer-demo`는 blueprint에 공개 데모 값으로 들어 있습니다.
-`JWT_SECRET`은 Render가 생성합니다. production secret을 Git에 넣지 않습니다.
+Demo viewer `viewer` / `viewer-demo`는 blueprint와 코드 기본값입니다.
+`JWT_SECRET`이 비어 있으면 API가 `DATABASE_URL`에서 환경별 서명키를 만듭니다. Git에 production secret을 넣지 않습니다. Dashboard에 `JWT_SECRET`을 두면 그 값을 씁니다.
 
 Live:
 
 - Web: https://factoryhr-frontend.onrender.com/
 - API: https://factoryhr-backend.onrender.com/
 - Health: https://factoryhr-backend.onrender.com/health → `{"status":"ok","database":"connected"}`
+- Login: https://factoryhr-frontend.onrender.com/login · 데모 `viewer` / `viewer-demo`
 
-`main` merge 직후 Live는 인증 없는 이전 빌드였습니다(`/auth/login` 없음, 프론트 `/login` 404). 기존 서비스는 Dashboard 설정이 자동 배포 off일 수 있습니다.
-
-Live 인증을 켜려면:
-
-1. [factoryhr-backend](https://dashboard.render.com/) · [factoryhr-frontend](https://dashboard.render.com/) 각각 **Manual Deploy** → Deploy latest commit
-2. backend Environment에 `JWT_SECRET`이 없으면 Generate/추가 (yaml `generateValue`는 신규 서비스에만 자동 생성)
-3. Live admin이 필요하면 `BOOTSTRAP_ADMIN_PASSWORD`를 Dashboard에서 넣는다. 데모 조회는 `viewer` / `viewer-demo`
-
-확인 기준: `POST /auth/login` 200, 프론트 `/login`에 DEMO ACCOUNT, viewer 쓰기 403.
-무료 플랜은 cold start가 있습니다.
+무료 플랜은 cold start가 있습니다. Live admin이 필요하면 `BOOTSTRAP_ADMIN_PASSWORD`를 Dashboard에서 넣습니다.
 
 `DATABASE_URL`이 `postgres://`이면 `postgresql+psycopg://`로 바꿉니다. 프론트 공개 URL은 `FRONTEND_URL`로 CORS에 들어갑니다. Next.js는 Render `$PORT`를 사용합니다.
 
