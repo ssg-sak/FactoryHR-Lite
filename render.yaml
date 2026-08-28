@@ -10,6 +10,8 @@ services:
     runtime: python
     plan: free
     region: oregon
+    branch: main
+    autoDeployTrigger: commit
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: alembic upgrade head && python -m scripts.seed && uvicorn app.main:app --host 0.0.0.0 --port $PORT
@@ -50,6 +52,8 @@ services:
     runtime: node
     plan: free
     region: oregon
+    branch: main
+    autoDeployTrigger: commit
     rootDir: frontend
     buildCommand: npm ci && npm run build
     startCommand: npm run start

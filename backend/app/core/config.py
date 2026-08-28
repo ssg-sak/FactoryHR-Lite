@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     bootstrap_admin_username: str = "admin"
     bootstrap_admin_password: str = ""
     demo_viewer_username: str = "viewer"
-    demo_viewer_password: str = ""
+    demo_viewer_password: str = "viewer-demo"
 
     @field_validator("database_url", mode="before")
     @classmethod

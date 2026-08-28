@@ -29,10 +29,10 @@ Employee / Attendance
 | PDF | Compose Docker 200, 141,032 bytes. 이전 Windows 로컬 200, 203,751 bytes. KPI 46 / 4 / 32.8 / 0.35 / 3.46 / 6.92 일치 |
 | CSV | UTF-8 BOM, 직원·근태 실제 생성 |
 | AI | 키 없음 → `503`. 이 Compose는 키 있어 200. 모델 `gemini-3.1-flash-lite` |
-| GitHub Actions | 이 PR의 Actions 결과로 확인 |
+| GitHub Actions | main CI **success** ([run 33157470728](https://github.com/ssg-sak/FactoryHR-Lite/actions/runs/33157470728), 1m20s). PR #1도 [success](https://github.com/ssg-sak/FactoryHR-Lite/actions/runs/33157150339) |
 | Docker Compose | 2026-08-28 재빌드 확인. db `5434:5432`, API 8000, web 3000. `/health` 200, admin/viewer 로그인, viewer 쓰기 403 |
 | Authentication | Argon2 + JWT access. 공개 회원가입 없음. viewer/admin. `/signup` 없음 |
-| Live Demo | [Web](https://factoryhr-frontend.onrender.com/) · [API `/health`](https://factoryhr-backend.onrender.com/health). 이 브랜치 인증은 merge·배포 후 확인 |
+| Live Demo | [Web](https://factoryhr-frontend.onrender.com/) · [API `/health`](https://factoryhr-backend.onrender.com/health). 인증 배포는 아래 Render 절 |
 
 ## 목차
 
@@ -321,7 +321,15 @@ Live:
 - API: https://factoryhr-backend.onrender.com/
 - Health: https://factoryhr-backend.onrender.com/health → `{"status":"ok","database":"connected"}`
 
-이 README의 인증·RBAC는 `feat/auth-rbac-final` 기준입니다. Live 로그인·viewer 403은 merge 후 배포를 확인한 뒤에만 기입합니다.
+`main` merge 직후 Live는 인증 없는 이전 빌드였습니다(`/auth/login` 없음, 프론트 `/login` 404). 기존 서비스는 Dashboard 설정이 자동 배포 off일 수 있습니다.
+
+Live 인증을 켜려면:
+
+1. [factoryhr-backend](https://dashboard.render.com/) · [factoryhr-frontend](https://dashboard.render.com/) 각각 **Manual Deploy** → Deploy latest commit
+2. backend Environment에 `JWT_SECRET`이 없으면 Generate/추가 (yaml `generateValue`는 신규 서비스에만 자동 생성)
+3. Live admin이 필요하면 `BOOTSTRAP_ADMIN_PASSWORD`를 Dashboard에서 넣는다. 데모 조회는 `viewer` / `viewer-demo`
+
+확인 기준: `POST /auth/login` 200, 프론트 `/login`에 DEMO ACCOUNT, viewer 쓰기 403.
 무료 플랜은 cold start가 있습니다.
 
 `DATABASE_URL`이 `postgres://`이면 `postgresql+psycopg://`로 바꿉니다. 프론트 공개 URL은 `FRONTEND_URL`로 CORS에 들어갑니다. Next.js는 Render `$PORT`를 사용합니다.
@@ -403,7 +411,8 @@ Live:
 문제: 테이블 dump는 없는 사실을 만들기 쉬움.  
 판단: 집계 JSON만 보냄.  
 구현: `cannot_conclude` 필수, 키 없으면 해당 API만 `503`.  
-결과: 키 없는 환경에서 PDF/CSV/대시보드는 그대로 동작.
+결과: 키 없는 환경에서 PDF/CSV/대시보드는 그대로 동작.  
+Live 502: `gemini-2.0-flash`가 2026-06-01 종료됨. 기본 모델을 `gemini-3.1-flash-lite`로 변경.
 
 **직원 삭제.**  
 문제: cascade면 근태가 같이 지워질 수 있음.  
@@ -428,19 +437,6 @@ Live:
 판단: 점수를 만들지 않음.  
 구현: 항목별 건수 조회. 제약이 막으면 0이고, 그것도 조회 결과.  
 결과: 실제 DB 기준 위반 0건.
-
-**퇴사율.**  
-문제: turnover의 분모는 보통 기간 평균 재직.  
-판단: 일별 스냅샷이 없음.  
-구현: 기간 내 퇴사 인원만 집계.  
-결과: PDF에도 turnover rate를 쓰지 않음.
-
-**AI 입력.**  
-문제: 테이블 dump는 없는 사실을 만들기 쉬움.  
-판단: 집계 JSON만 보냄.  
-구현: `cannot_conclude` 필수, 키 없으면 해당 API만 `503`.  
-결과: 키 없는 환경에서 PDF/CSV/대시보드는 그대로 동작.  
-Live 502: `gemini-2.0-flash`가 2026-06-01 종료됨. 기본 모델을 `gemini-3.1-flash-lite`로 변경.
 
 **회귀 테스트.**  
 문제: 대시보드를 붙이며 기존 CRUD 계약을 깨기 쉬움.  
