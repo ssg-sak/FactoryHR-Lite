@@ -68,7 +68,7 @@ export default function EmployeesPage() {
   });
 
   return (
-    <AppShell title="Employees" description="직원 검색, 필터, 등록/수정/삭제">
+    <AppShell title="직원 관리" description="직원 검색, 필터, 등록/수정/삭제">
       <div className="space-y-4">
         <FilterBar
           value={filters}
@@ -132,7 +132,7 @@ export default function EmployeesPage() {
             <table className="min-w-full text-sm">
               <thead className="bg-slate-50 text-left text-slate-600">
                 <tr>
-                  {["사번", "이름", "부서", "공장", "생산라인", "교대조", "직책", "입사일", "상태", "Actions"].map(
+                  {["사번", "이름", "부서", "공장", "생산라인", "교대조", "직책", "입사일", "상태", "작업"].map(
                     (header) => (
                       <th key={header} className="px-3 py-2 font-medium">
                         {header}

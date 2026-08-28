@@ -36,7 +36,7 @@ export default function EmployeeDetailPage() {
   const asOf = employee.data?.resigned_at ?? new Date().toISOString().slice(0, 10);
 
   return (
-    <AppShell title="Employee Detail" description="직원 기본 정보와 최근 근태">
+    <AppShell title="직원 상세" description="직원 기본 정보와 최근 근태">
       <div className="space-y-4">
         <Link href="/employees" className="text-sm text-teal-800 underline">
           목록으로

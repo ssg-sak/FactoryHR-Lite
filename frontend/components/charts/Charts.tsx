@@ -1,4 +1,7 @@
+"use client";
+
 import { EmptyState } from "@/components/ui/Feedback";
+import { DefinitionTooltip } from "@/components/ui/DefinitionTooltip";
 import { hasChartValues } from "@/lib/format";
 import type { ReactNode } from "react";
 import {
@@ -17,20 +20,25 @@ import {
 export function ChartCard({
   title,
   description,
+  definition,
   unit,
   children,
 }: {
   title: string;
-  description: string;
+  description?: string;
+  definition?: string;
   unit: string;
   children: ReactNode;
 }) {
   return (
     <section className="rounded-md border border-slate-200 bg-white p-4">
-      <div className="mb-3">
-        <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
-        <p className="mt-1 text-xs text-slate-500">{description}</p>
-        <p className="text-xs text-slate-400">단위: {unit}</p>
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+          {description ? <p className="mt-1 text-xs text-slate-500">{description}</p> : null}
+          <p className="mt-0.5 text-[11px] text-slate-400">단위: {unit}</p>
+        </div>
+        {definition ? <DefinitionTooltip definition={definition} /> : null}
       </div>
       {children}
     </section>
@@ -64,7 +72,7 @@ export function HorizontalBars({
     return <EmptyState message="선택한 조건에 해당하는 데이터가 없습니다." />;
   }
   return (
-    <div className="h-72">
+    <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ left: 16, right: 16 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -92,7 +100,7 @@ export function VerticalBars({
     return <EmptyState message="선택한 조건에 해당하는 데이터가 없습니다." />;
   }
   return (
-    <div className="h-72">
+    <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ left: 8, right: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -120,7 +128,7 @@ export function AttendanceLines({
     return <EmptyState message="선택한 조건에 해당하는 데이터가 없습니다." />;
   }
   return (
-    <div className="h-72">
+    <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ left: 8, right: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />

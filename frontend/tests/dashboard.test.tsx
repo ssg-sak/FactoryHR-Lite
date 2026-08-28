@@ -85,11 +85,17 @@ describe("DashboardPage", () => {
       }),
     );
 
+    const user = userEvent.setup();
     renderWithQuery(<DashboardPage />);
     expect(await screen.findByText("현재 재직 인원")).toBeInTheDocument();
     expect(await screen.findByText("46")).toBeInTheDocument();
-    expect(screen.getByText("Data Quality Checks")).toBeInTheDocument();
-    expect(screen.getByText("공장별 재직인원")).toBeInTheDocument();
+    expect(screen.getByText("현재 재직 상태인 직원 수")).toBeInTheDocument();
+    expect(screen.getByText("데이터 검증 상태")).toBeInTheDocument();
+    expect(screen.getByText("주요 정합성 검사 통과")).toBeInTheDocument();
+    expect(screen.getByText("공장별 재직 인원")).toBeInTheDocument();
+    expect(screen.queryByText("status = active인 직원 수")).not.toBeInTheDocument();
+    await user.click(screen.getAllByRole("button", { name: "지표 정의" })[0]);
+    expect(screen.getByText("status = active인 직원 수")).toBeInTheDocument();
   });
 
   it("shows an API error state", async () => {

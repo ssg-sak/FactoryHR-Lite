@@ -31,20 +31,29 @@ export function FilterBar({
   const deptName = departments.data?.find((item) => item.id === value.department_id)?.name;
   const lineName = lines.data?.find((item) => item.id === value.production_line_id)?.name;
   const shiftName = shifts.data?.find((item) => item.id === value.shift_id)?.name;
-  const summary = [
-    showDates
-      ? value.date_from || value.date_to
-        ? `${formatDate(value.date_from)} ~ ${formatDate(value.date_to)}`
-        : "기간 전체"
-      : null,
-    deptName,
-    factoryName,
-    lineName,
-    shiftName,
-  ].filter(Boolean);
+  const periodLabel =
+    value.date_from || value.date_to
+      ? `${formatDate(value.date_from)} ~ ${formatDate(value.date_to)}`
+      : "전체";
+  const orgChips = [
+    `부서 ${deptName ?? "전체"}`,
+    `공장 ${factoryName ?? "전체"}`,
+    `생산라인 ${lineName ?? "전체"}`,
+    `교대조 ${shiftName ?? "전체"}`,
+  ];
 
   return (
     <section className="rounded-md border border-slate-200 bg-white p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <h2 className="text-sm font-semibold text-slate-800">조회 조건</h2>
+        <button
+          type="button"
+          onClick={onReset}
+          className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700"
+        >
+          초기화
+        </button>
+      </div>
       <div className={`grid gap-3 md:grid-cols-3 ${showDates ? "xl:grid-cols-6" : "xl:grid-cols-4"}`}>
         {showDates ? (
           <>
@@ -151,17 +160,13 @@ export function FilterBar({
           </select>
         </label>
       </div>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-600" data-testid="filter-summary">
-          적용 필터: {summary.length ? summary.join(" · ") : "전체"}
-        </p>
-        <button
-          type="button"
-          onClick={onReset}
-          className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700"
-        >
-          Reset
-        </button>
+      <div className="mt-3 space-y-1 text-sm text-slate-600" data-testid="filter-summary">
+        {showDates ? (
+          <p>
+            <span className="text-slate-500">조회 기간</span> {periodLabel}
+          </p>
+        ) : null}
+        <p>{orgChips.join(" · ")}</p>
       </div>
     </section>
   );

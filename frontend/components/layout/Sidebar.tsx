@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { CalendarCheck, ClipboardList, LayoutDashboard, Users } from "lucide-react";
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/employees", label: "Employees", icon: Users },
-  { href: "/attendance", label: "Attendance", icon: CalendarCheck },
-  { href: "/reports", label: "Reports", icon: ClipboardList },
+  { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
+  { href: "/employees", label: "직원 관리", icon: Users },
+  { href: "/attendance", label: "근태 관리", icon: CalendarCheck },
+  { href: "/reports", label: "리포트", icon: ClipboardList },
 ];
 
 export function Sidebar() {
@@ -17,7 +17,7 @@ export function Sidebar() {
     <aside className="flex w-60 shrink-0 flex-col bg-slate-900 text-slate-100">
       <div className="border-b border-slate-700 px-5 py-5">
         <p className="text-sm font-semibold tracking-wide">FactoryHR Lite</p>
-        <p className="mt-1 text-xs leading-5 text-slate-400">
+        <p className="mt-1 text-[13px] leading-5 text-slate-300">
           Manufacturing Workforce Operations
         </p>
       </div>

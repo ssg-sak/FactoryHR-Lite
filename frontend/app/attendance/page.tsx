@@ -70,7 +70,7 @@ export default function AttendancePage() {
   });
 
   return (
-    <AppShell title="Attendance" description="근태 조회와 등록. 입사 전·퇴사 후 날짜는 백엔드에서 차단됩니다.">
+    <AppShell title="근태 관리" description="근태 조회와 등록. 입사 전·퇴사 후 날짜에는 근태를 등록할 수 없습니다.">
       <div className="space-y-4">
         <section className="grid gap-3 rounded-md border border-slate-200 bg-white p-4 md:grid-cols-5">
           <label className="text-xs font-medium text-slate-600">
@@ -165,7 +165,7 @@ export default function AttendancePage() {
                     "상태",
                     "근무시간",
                     "잔업시간",
-                    "Actions",
+                    "작업",
                   ].map((header) => (
                     <th key={header} className="px-3 py-2 font-medium">
                       {header}
