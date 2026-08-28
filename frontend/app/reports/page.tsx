@@ -1,17 +1,17 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AttendanceLines, ChartCard, HorizontalBars, VerticalBars } from "@/components/charts/Charts";
 import { DataQualityPanel } from "@/components/dashboard/DataQualityPanel";
-import { KpiCard, formatKpi } from "@/components/dashboard/KpiCard";
+import { WorkforceKpiGrid } from "@/components/dashboard/KpiCard";
 import { FilterBar } from "@/components/filters/FilterBar";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorState, Spinner } from "@/components/ui/Feedback";
 import { api, reportDownloadUrl } from "@/lib/api";
 import { DEFAULT_DATE_FROM, DEFAULT_DATE_TO, KPI_DEFINITIONS } from "@/lib/constants";
 import { ApiError } from "@/lib/errors";
-import { formatPercent } from "@/lib/format";
 import type { AIReportResponse, WorkforceFilters } from "@/lib/types";
 
 const INITIAL_FILTERS: WorkforceFilters = {
@@ -40,6 +40,10 @@ export default function ReportsPage() {
     queryKey: ["overtime", queryFilters],
     queryFn: () => api.overtime(queryFilters),
   });
+  const tenure = useQuery({
+    queryKey: ["tenure", queryFilters],
+    queryFn: () => api.tenure(queryFilters),
+  });
   const quality = useQuery({ queryKey: ["data-quality"], queryFn: api.dataQuality });
   const aiMutation = useMutation({
     mutationFn: () => api.aiSummary(queryFilters),
@@ -47,37 +51,46 @@ export default function ReportsPage() {
   });
 
   return (
-    <AppShell title="Reports" description="필터를 적용한 리포트 미리보기, PDF/CSV 다운로드, AI 요약">
-      <div className="space-y-5">
+    <AppShell
+      title="리포트"
+      description="조회 조건을 적용해 인력운영 지표를 확인하고 PDF/CSV 리포트를 내려받을 수 있습니다."
+    >
+      <div className="space-y-4">
         <FilterBar value={filters} onChange={setFilters} onReset={() => setFilters(INITIAL_FILTERS)} />
-        <div className="flex flex-wrap gap-2">
-          <a
-            className="rounded bg-teal-800 px-3 py-2 text-sm text-white"
-            href={reportDownloadUrl("/api/reports/workforce.pdf", filters)}
-          >
-            PDF 다운로드
-          </a>
-          <a
-            className="rounded border border-slate-300 bg-white px-3 py-2 text-sm"
-            href={reportDownloadUrl("/api/reports/employees.csv", filters)}
-          >
-            직원 CSV
-          </a>
-          <a
-            className="rounded border border-slate-300 bg-white px-3 py-2 text-sm"
-            href={reportDownloadUrl("/api/reports/attendance.csv", filters)}
-          >
-            근태 CSV
-          </a>
-          <button
-            type="button"
-            className="rounded border border-slate-300 bg-white px-3 py-2 text-sm disabled:opacity-50"
-            disabled={aiMutation.isPending}
-            onClick={() => aiMutation.mutate()}
-          >
-            {aiMutation.isPending ? "AI 요약 생성 중..." : "AI Summary 생성"}
-          </button>
-        </div>
+        {quality.data ? <DataQualityPanel data={quality.data} /> : null}
+
+        <section className="rounded-md border border-slate-200 bg-white p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              className="rounded bg-teal-800 px-3.5 py-2 text-sm font-medium text-white"
+              href={reportDownloadUrl("/api/reports/workforce.pdf", filters)}
+            >
+              PDF 리포트 다운로드
+            </a>
+            <a
+              className="rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
+              href={reportDownloadUrl("/api/reports/employees.csv", filters)}
+            >
+              직원 CSV
+            </a>
+            <a
+              className="rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700"
+              href={reportDownloadUrl("/api/reports/attendance.csv", filters)}
+            >
+              근태 CSV
+            </a>
+            <span className="hidden h-6 w-px bg-slate-200 sm:block" aria-hidden="true" />
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-800 disabled:opacity-50"
+              disabled={aiMutation.isPending}
+              onClick={() => aiMutation.mutate()}
+            >
+              <Sparkles size={14} aria-hidden="true" />
+              {aiMutation.isPending ? "AI 요약 생성 중..." : "AI 요약 생성"}
+            </button>
+          </div>
+        </section>
         {aiMutation.error instanceof ApiError ? (
           <ErrorState message={aiMutation.error.message} />
         ) : null}
@@ -86,67 +99,92 @@ export default function ReportsPage() {
         {summary.error instanceof Error ? <ErrorState message={summary.error.message} /> : null}
 
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">Report Preview · KPI Summary</h2>
-          {summary.data ? (
-            <div className="grid gap-4 md:grid-cols-3">
-              <KpiCard
-                label="현재 재직 인원"
-                value={formatKpi(summary.data.active_employees)}
-                unit="명"
-                definition={KPI_DEFINITIONS.active_employees}
-              />
-              <KpiCard
-                label="선택 기간 퇴사 인원"
-                value={formatKpi(summary.data.resigned_in_period)}
-                unit="명"
-                definition={KPI_DEFINITIONS.resigned_in_period}
-              />
-              <KpiCard
-                label="평균 잔업시간"
-                value={formatKpi(summary.data.average_overtime_hours, 2)}
-                unit="시간"
-                definition={KPI_DEFINITIONS.average_overtime_hours}
-              />
-              <KpiCard
-                label="결근 기록 비율"
-                value={formatPercent(summary.data.absence_rate)}
-                unit=""
-                definition={KPI_DEFINITIONS.absence_rate}
-              />
-              <KpiCard
-                label="지각 기록 비율"
-                value={formatPercent(summary.data.late_rate)}
-                unit=""
-                definition={KPI_DEFINITIONS.late_rate}
-              />
-              <KpiCard
-                label="평균 근속 개월"
-                value={formatKpi(summary.data.average_tenure_months, 1)}
-                unit="개월"
-                definition={KPI_DEFINITIONS.average_tenure_months}
-              />
-            </div>
-          ) : null}
+          <div>
+            <h2 className="text-sm font-semibold text-slate-800">리포트 미리보기</h2>
+            <p className="mt-0.5 text-xs text-slate-500">핵심 지표</p>
+          </div>
+          {summary.data ? <WorkforceKpiGrid summary={summary.data} /> : null}
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-2">
-          <ChartCard title="Workforce Structure" description="재직 인원 공장 분포" unit="명">
-            <HorizontalBars data={workforce.data?.active_by_factory ?? []} />
-          </ChartCard>
-          <ChartCard title="Attendance" description="날짜별 결근/지각 비율" unit="%">
-            <AttendanceLines data={trend.data?.points ?? []} />
-          </ChartCard>
-          <ChartCard title="Overtime" description="교대조별 평균 잔업" unit="시간">
-            <VerticalBars data={overtime.data?.by_shift ?? []} valueKey="average_overtime_hours" />
-          </ChartCard>
-          {quality.data ? <DataQualityPanel data={quality.data} /> : null}
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-slate-800">인력 구성</h2>
+          <div className="grid gap-3 xl:grid-cols-2">
+            <ChartCard
+              title="공장별 재직 인원"
+              description="현재 재직 직원 수"
+              definition="현재 status = active인 직원 수. 과거 배치 이력은 포함하지 않습니다."
+              unit="명"
+            >
+              <HorizontalBars data={workforce.data?.active_by_factory ?? []} />
+            </ChartCard>
+            <ChartCard
+              title="생산라인별 재직 인원"
+              description="생산라인이 지정된 재직 직원"
+              definition="생산라인이 지정된 재직 직원만 해당 라인에 집계됩니다."
+              unit="명"
+            >
+              <HorizontalBars data={workforce.data?.active_by_line ?? []} />
+            </ChartCard>
+            <ChartCard
+              title="교대조별 재직 인원"
+              description="현재 교대 배치 기준"
+              definition="현재 교대 배치 기준 재직 인원입니다."
+              unit="명"
+            >
+              <VerticalBars data={workforce.data?.active_by_shift ?? []} />
+            </ChartCard>
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-slate-800">근태 및 잔업</h2>
+          <div className="grid gap-3 xl:grid-cols-2">
+            <ChartCard
+              title="근태 추이"
+              description="날짜별 결근·지각 비율"
+              definition={`${KPI_DEFINITIONS.absence_rate}\n${KPI_DEFINITIONS.late_rate}`}
+              unit="%"
+            >
+              <AttendanceLines data={trend.data?.points ?? []} />
+            </ChartCard>
+            <ChartCard
+              title="교대조별 평균 잔업시간"
+              description="선택 기간 평균 잔업시간"
+              definition="선택 기간 attendance.overtime_hours 평균. 직원 현재 교대 기준입니다."
+              unit="시간"
+            >
+              <VerticalBars data={overtime.data?.by_shift ?? []} valueKey="average_overtime_hours" />
+            </ChartCard>
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-slate-800">근속 및 인력 변화</h2>
+          <div className="grid gap-3 xl:grid-cols-2">
+            <ChartCard
+              title="근속기간 분포"
+              description="재직 직원 기준"
+              definition={tenure.data?.definition || KPI_DEFINITIONS.average_tenure_months}
+              unit="명"
+            >
+              <VerticalBars data={tenure.data?.bands ?? []} nameKey="label" />
+            </ChartCard>
+            <ChartCard
+              title="부서별 기간 내 퇴사 인원"
+              description="선택 기간 퇴사 인원"
+              definition="부서별 퇴사 인원입니다. 평균 재직 분모가 없어 turnover rate로 해석하지 않습니다."
+              unit="명"
+            >
+              <VerticalBars data={workforce.data?.resignations_by_department ?? []} />
+            </ChartCard>
+          </div>
         </section>
 
         <section className="rounded-md border border-slate-200 bg-white p-4">
-          <h2 className="text-sm font-semibold text-slate-900">AI Summary</h2>
+          <h2 className="text-sm font-semibold text-slate-800">AI 요약</h2>
           <p className="mt-1 text-xs text-slate-500">
-            Gemini는 위에서 계산된 KPI JSON만 받습니다. API key가 없으면 이 버튼만 실패하고 PDF/CSV는 그대로
-            동작합니다.
+            위에서 계산된 핵심 지표를 바탕으로 보조 분석을 생성합니다. API key가 없으면 이 기능만
+            실패하고 PDF/CSV는 그대로 동작합니다.
           </p>
           {ai ? (
             <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -166,7 +204,7 @@ export default function ReportsPage() {
 function AiColumn({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</h3>
+      <h3 className="text-xs font-semibold text-slate-500">{title}</h3>
       <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-800">
         {items.length ? items.map((item) => <li key={item}>{item}</li>) : <li>해당 항목 없음</li>}
       </ul>
