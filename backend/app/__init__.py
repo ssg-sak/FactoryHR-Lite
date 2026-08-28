@@ -1,0 +1,2 @@
+"""FactoryHR Lite backend package."""
+
