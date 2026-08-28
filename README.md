@@ -31,7 +31,7 @@ Employee / Attendance
 | AI | `GEMINI_API_KEY` 없음 → `503`, PDF/CSV/화면은 정상 |
 | GitHub Actions | **passed** (main push, backend + frontend) |
 | Docker Compose | 이 환경에 Docker CLI 없음. **미실행** |
-| Live Demo | Render 계정/키 없음. `render.yaml`만 준비 |
+| Live Demo | Blueprint 준비됨. Render Apply 후 URL 기입 |
 
 ## 목차
 
@@ -265,13 +265,27 @@ npm run e2e
 
 ### Render
 
-`render.yaml`에 PostgreSQL / FastAPI / Next.js 세 서비스를 적어 두었습니다.
-이 환경에는 Render 배포 키가 없어 **실제 배포는 하지 않았습니다**.
+[New Blueprint](https://dashboard.render.com/blueprint/new?repo=https://github.com/ssg-sak/FactoryHR-Lite)에서 GitHub 저장소를 연결하고 Apply 합니다.
 
-순서: PostgreSQL → backend(`alembic upgrade head`, seed) → `/health` → frontend(`NEXT_PUBLIC_API_URL`) → CORS에 프론트 URL.
+`render.yaml`이 만드는 것:
 
-`DATABASE_URL`이 `postgres://`로 오면 백엔드가 `postgresql+psycopg://`로 바꿉니다.
-무료 플랜은 cold start가 있습니다.
+| 리소스 | 이름 | 역할 |
+|---|---|---|
+| PostgreSQL | `factoryhr-db` | 무료, 16, 30일 만료 |
+| Web | `factoryhr-backend` | migrate + seed 후 FastAPI, `/health` |
+| Web | `factoryhr-frontend` | Next.js. API URL은 백엔드 공개 URL |
+
+Apply 화면에서 `GEMINI_API_KEY`는 비워 두어도 됩니다. 넣으면 Reports에서 AI 요약이 동작합니다.
+
+배포 후 확인할 것:
+
+1. `https://<backend>.onrender.com/health` → `{"status":"ok","database":"connected"}`
+2. 프론트에서 `/dashboard` `/employees` `/attendance` `/reports` 한 번씩
+3. 첫 요청은 무료 플랜 cold start로 1~2분 걸릴 수 있음
+
+`DATABASE_URL`이 `postgres://`이면 `postgresql+psycopg://`로 바꿉니다. 프론트 공개 URL은 `FRONTEND_URL`로 CORS에 들어갑니다. Next.js는 Render `$PORT`를 사용합니다.
+
+Live Demo URL은 Apply가 끝난 뒤 이 README 표에 기입합니다.
 
 ---
 
@@ -310,7 +324,8 @@ npm run e2e
 - 인증 없음
 - AI는 KPI 보조 요약. 노무 판단용이 아님
 - PDF 한글은 시스템 CJK 폰트(이 환경: 맑은 고딕)
-- Docker Compose / Render live URL은 이 환경에서 미검증
+- Docker Compose는 이 Windows 환경에 CLI가 없어 미실행
+- Render live URL은 Blueprint Apply 후 기입
 
 이후: 배치 이력, Admin/Viewer, HRIS 연동, 배포 환경 E2E.
 
