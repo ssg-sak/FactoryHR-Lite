@@ -1,44 +1,37 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
 import { AttendanceLines, ChartCard, HorizontalBars, VerticalBars } from "@/components/charts/Charts";
 import { DataQualityPanel } from "@/components/dashboard/DataQualityPanel";
 import { WorkforceKpiGrid } from "@/components/dashboard/KpiCard";
 import { FilterBar } from "@/components/filters/FilterBar";
+import { useWorkforceFilters } from "@/components/filters/WorkforceFilterContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorState, Spinner } from "@/components/ui/Feedback";
 import { api } from "@/lib/api";
-import { DEFAULT_DATE_FROM, DEFAULT_DATE_TO, KPI_DEFINITIONS } from "@/lib/constants";
-import type { WorkforceFilters } from "@/lib/types";
-
-const INITIAL_FILTERS: WorkforceFilters = {
-  date_from: DEFAULT_DATE_FROM,
-  date_to: DEFAULT_DATE_TO,
-};
+import { KPI_DEFINITIONS } from "@/lib/constants";
 
 export default function DashboardPage() {
-  const [filters, setFilters] = useState<WorkforceFilters>(INITIAL_FILTERS);
-  const queryFilters = useMemo(() => filters, [filters]);
+  const { filters, setFilters, resetFilters } = useWorkforceFilters();
   const summary = useQuery({
-    queryKey: ["dashboard-summary", queryFilters],
-    queryFn: () => api.dashboardSummary(queryFilters),
+    queryKey: ["dashboard-summary", filters],
+    queryFn: () => api.dashboardSummary(filters),
   });
   const workforce = useQuery({
-    queryKey: ["workforce", queryFilters],
-    queryFn: () => api.workforceDistribution(queryFilters),
+    queryKey: ["workforce", filters],
+    queryFn: () => api.workforceDistribution(filters),
   });
   const trend = useQuery({
-    queryKey: ["attendance-trend", queryFilters],
-    queryFn: () => api.attendanceTrend(queryFilters),
+    queryKey: ["attendance-trend", filters],
+    queryFn: () => api.attendanceTrend(filters),
   });
   const overtime = useQuery({
-    queryKey: ["overtime", queryFilters],
-    queryFn: () => api.overtime(queryFilters),
+    queryKey: ["overtime", filters],
+    queryFn: () => api.overtime(filters),
   });
   const tenure = useQuery({
-    queryKey: ["tenure", queryFilters],
-    queryFn: () => api.tenure(queryFilters),
+    queryKey: ["tenure", filters],
+    queryFn: () => api.tenure(filters),
   });
   const quality = useQuery({ queryKey: ["data-quality"], queryFn: api.dataQuality });
 
@@ -48,11 +41,7 @@ export default function DashboardPage() {
       description="조회 조건 기준으로 재직·근태·잔업 현황을 확인합니다."
     >
       <div className="space-y-4">
-        <FilterBar
-          value={filters}
-          onChange={setFilters}
-          onReset={() => setFilters(INITIAL_FILTERS)}
-        />
+        <FilterBar value={filters} onChange={setFilters} onReset={resetFilters} />
         {quality.data ? <DataQualityPanel data={quality.data} /> : null}
         {summary.isLoading ? <Spinner /> : null}
         {summary.error instanceof Error ? <ErrorState message={summary.error.message} /> : null}

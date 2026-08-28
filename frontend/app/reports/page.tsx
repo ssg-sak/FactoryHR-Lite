@@ -2,51 +2,46 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { AttendanceLines, ChartCard, HorizontalBars, VerticalBars } from "@/components/charts/Charts";
 import { DataQualityPanel } from "@/components/dashboard/DataQualityPanel";
 import { WorkforceKpiGrid } from "@/components/dashboard/KpiCard";
 import { FilterBar } from "@/components/filters/FilterBar";
+import { useWorkforceFilters } from "@/components/filters/WorkforceFilterContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorState, Spinner } from "@/components/ui/Feedback";
 import { api, reportDownloadUrl } from "@/lib/api";
-import { DEFAULT_DATE_FROM, DEFAULT_DATE_TO, KPI_DEFINITIONS } from "@/lib/constants";
+import { KPI_DEFINITIONS } from "@/lib/constants";
 import { ApiError } from "@/lib/errors";
-import type { AIReportResponse, WorkforceFilters } from "@/lib/types";
-
-const INITIAL_FILTERS: WorkforceFilters = {
-  date_from: DEFAULT_DATE_FROM,
-  date_to: DEFAULT_DATE_TO,
-};
+import type { AIReportResponse } from "@/lib/types";
 
 export default function ReportsPage() {
-  const [filters, setFilters] = useState<WorkforceFilters>(INITIAL_FILTERS);
-  const queryFilters = useMemo(() => filters, [filters]);
+  const { filters, setFilters, resetFilters } = useWorkforceFilters();
   const [ai, setAi] = useState<AIReportResponse | null>(null);
 
   const summary = useQuery({
-    queryKey: ["dashboard-summary", queryFilters],
-    queryFn: () => api.dashboardSummary(queryFilters),
+    queryKey: ["dashboard-summary", filters],
+    queryFn: () => api.dashboardSummary(filters),
   });
   const workforce = useQuery({
-    queryKey: ["workforce", queryFilters],
-    queryFn: () => api.workforceDistribution(queryFilters),
+    queryKey: ["workforce", filters],
+    queryFn: () => api.workforceDistribution(filters),
   });
   const trend = useQuery({
-    queryKey: ["attendance-trend", queryFilters],
-    queryFn: () => api.attendanceTrend(queryFilters),
+    queryKey: ["attendance-trend", filters],
+    queryFn: () => api.attendanceTrend(filters),
   });
   const overtime = useQuery({
-    queryKey: ["overtime", queryFilters],
-    queryFn: () => api.overtime(queryFilters),
+    queryKey: ["overtime", filters],
+    queryFn: () => api.overtime(filters),
   });
   const tenure = useQuery({
-    queryKey: ["tenure", queryFilters],
-    queryFn: () => api.tenure(queryFilters),
+    queryKey: ["tenure", filters],
+    queryFn: () => api.tenure(filters),
   });
   const quality = useQuery({ queryKey: ["data-quality"], queryFn: api.dataQuality });
   const aiMutation = useMutation({
-    mutationFn: () => api.aiSummary(queryFilters),
+    mutationFn: () => api.aiSummary(filters),
     onSuccess: setAi,
   });
 
@@ -56,7 +51,7 @@ export default function ReportsPage() {
       description="조회 조건을 적용해 인력운영 지표를 확인하고 PDF/CSV 리포트를 내려받을 수 있습니다."
     >
       <div className="space-y-4">
-        <FilterBar value={filters} onChange={setFilters} onReset={() => setFilters(INITIAL_FILTERS)} />
+        <FilterBar value={filters} onChange={setFilters} onReset={resetFilters} />
         {quality.data ? <DataQualityPanel data={quality.data} /> : null}
 
         <section className="rounded-md border border-slate-200 bg-white p-4">
