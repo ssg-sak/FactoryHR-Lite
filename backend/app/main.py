@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
 from app.core.database import SessionLocal
-from app.routers import attendance, dashboard, employees, master_data, reports
+from app.routers import attendance, auth, dashboard, employees, master_data, reports
 
 app = FastAPI(
     title=settings.app_name,
@@ -22,6 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(employees.router)
 app.include_router(attendance.router)
 app.include_router(dashboard.router)

@@ -2,6 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 import path from "node:path";
 
 const images = path.resolve(__dirname, "../../docs/images");
+const username = process.env.E2E_USERNAME ?? "admin";
+const password = process.env.E2E_PASSWORD ?? "admin-local";
 
 async function hideDevOverlay(page: Page) {
   await page.addStyleTag({
@@ -9,10 +11,17 @@ async function hideDevOverlay(page: Page) {
   });
 }
 
+async function login(page: Page) {
+  await page.goto("/login");
+  await page.getByLabel("사용자 이름").fill(username);
+  await page.getByLabel("비밀번호").fill(password);
+  await page.getByRole("button", { name: "로그인" }).click();
+  await expect(page.getByText("현재 재직 인원")).toBeVisible({ timeout: 20_000 });
+}
+
 test.describe("FactoryHR Lite smoke", () => {
   test("dashboard loads KPIs and data quality", async ({ page }) => {
-    await page.goto("/dashboard");
-    await expect(page.getByText("현재 재직 인원")).toBeVisible({ timeout: 20_000 });
+    await login(page);
     await expect(page.getByText("데이터 검증 상태")).toBeVisible();
     await expect(page.getByText("주요 정합성 검사 통과")).toBeVisible();
     await hideDevOverlay(page);
@@ -20,6 +29,7 @@ test.describe("FactoryHR Lite smoke", () => {
   });
 
   test("employees table loads and delete with attendance is blocked", async ({ page }) => {
+    await login(page);
     await page.goto("/employees");
     await expect(page.getByText("FHR-0001")).toBeVisible({ timeout: 20_000 });
     await hideDevOverlay(page);
@@ -33,6 +43,7 @@ test.describe("FactoryHR Lite smoke", () => {
   });
 
   test("attendance form blocks work hours over 16", async ({ page }) => {
+    await login(page);
     await page.goto("/attendance");
     await page.getByRole("button", { name: "근태 등록" }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
@@ -44,16 +55,16 @@ test.describe("FactoryHR Lite smoke", () => {
   });
 
   test("reports page exposes PDF download and shared filters", async ({ page }) => {
-    await page.goto("/dashboard");
+    await login(page);
     await expect(page.getByText("현재 재직 인원")).toBeVisible({ timeout: 20_000 });
     await page.getByLabel("공장").selectOption({ index: 1 });
     await expect(page.getByTestId("filter-summary")).not.toContainText("공장 전체");
 
     await page.getByRole("link", { name: "리포트" }).click();
-    await expect(page.getByRole("link", { name: "PDF 리포트 다운로드" })).toBeVisible({
+    await expect(page.getByRole("button", { name: "PDF 리포트 다운로드" })).toBeVisible({
       timeout: 20_000,
     });
-    await expect(page.getByRole("link", { name: "직원 CSV" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "직원 CSV" })).toBeVisible();
     await expect(page.getByRole("button", { name: "AI 요약 생성" })).toBeVisible();
     await expect(page.getByTestId("filter-summary")).not.toContainText("공장 전체");
     await hideDevOverlay(page);

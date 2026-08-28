@@ -1,4 +1,11 @@
 import { ApiError, formatApiError } from "./errors";
+import {
+  clearStoredToken,
+  getStoredToken,
+  setStoredToken,
+  type AuthUser,
+  type LoginResponse,
+} from "./auth";
 import type {
   AIReportResponse,
   Attendance,
@@ -21,6 +28,17 @@ import type {
 } from "./types";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  unauthorizedHandler = handler;
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getStoredToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 function toQuery(params: Record<string, string | number | undefined | null>): string {
   const search = new URLSearchParams();
@@ -50,9 +68,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders(),
       ...(init?.headers ?? {}),
     },
   });
+  if (response.status === 401) {
+    clearStoredToken();
+    unauthorizedHandler?.();
+  }
   if (response.status === 204) {
     return undefined as T;
   }
@@ -68,6 +91,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   health: () => request<{ status: string; database: string }>("/health"),
+  login: async (username: string, password: string) => {
+    const result = await request<LoginResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+    setStoredToken(result.access_token);
+    return result;
+  },
+  me: () => request<AuthUser>("/auth/me"),
   departments: () => request<Department[]>("/api/departments"),
   factories: () => request<Factory[]>("/api/factories"),
   productionLines: (factoryId?: number) =>
@@ -117,9 +149,33 @@ export const api = {
     }),
 };
 
-export function reportDownloadUrl(
+export async function downloadReport(
   path: "/api/reports/workforce.pdf" | "/api/reports/employees.csv" | "/api/reports/attendance.csv",
   filters: WorkforceFilters,
-): string {
-  return `${API_URL}${path}${toQuery(workforceQuery(filters))}`;
+): Promise<void> {
+  const response = await fetch(`${API_URL}${path}${toQuery(workforceQuery(filters))}`, {
+    headers: authHeaders(),
+  });
+  if (response.status === 401) {
+    clearStoredToken();
+    unauthorizedHandler?.();
+  }
+  if (!response.ok) {
+    const contentType = response.headers.get("content-type") ?? "";
+    const body = contentType.includes("application/json") ? await response.json() : await response.text();
+    const detail = contentType.includes("application/json")
+      ? (body as { detail?: unknown }).detail
+      : body;
+    throw new ApiError(formatApiError(response.status, detail), response.status);
+  }
+  const blob = await response.blob();
+  const disposition = response.headers.get("content-disposition") ?? "";
+  const match = disposition.match(/filename="([^"]+)"/);
+  const filename = match?.[1] ?? path.split("/").pop() ?? "download";
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(objectUrl);
 }

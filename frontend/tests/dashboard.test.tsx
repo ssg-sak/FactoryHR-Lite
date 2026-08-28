@@ -7,6 +7,7 @@ import { jsonResponse, renderWithQuery } from "./test-utils";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/dashboard",
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn(), prefetch: vi.fn() }),
 }));
 
 vi.mock("next/link", () => ({

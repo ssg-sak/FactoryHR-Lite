@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { AttendanceForm } from "@/components/attendance/AttendanceForm";
+import { useAuth } from "@/components/auth/AuthContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { EmptyState, ErrorState, Spinner } from "@/components/ui/Feedback";
 import { Modal } from "@/components/ui/Modal";
@@ -15,6 +16,7 @@ import { formatDate, formatHours } from "@/lib/format";
 import type { Attendance, AttendanceWritePayload } from "@/lib/types";
 
 export default function AttendancePage() {
+  const { canWrite } = useAuth();
   const queryClient = useQueryClient();
   const [dateFrom, setDateFrom] = useState(DEFAULT_DATE_FROM);
   const [dateTo, setDateTo] = useState(DEFAULT_DATE_TO);
@@ -133,16 +135,18 @@ export default function AttendancePage() {
             </select>
           </label>
           <div className="flex items-end">
-            <button
-              type="button"
-              className="rounded bg-teal-800 px-3 py-2 text-sm text-white"
-              onClick={() => {
-                setFormError(null);
-                setEditor("create");
-              }}
-            >
-              근태 등록
-            </button>
+            {canWrite ? (
+              <button
+                type="button"
+                className="rounded bg-teal-800 px-3 py-2 text-sm text-white"
+                onClick={() => {
+                  setFormError(null);
+                  setEditor("create");
+                }}
+              >
+                근태 등록
+              </button>
+            ) : null}
           </div>
         </section>
         {list.isLoading ? <Spinner /> : null}
@@ -188,29 +192,33 @@ export default function AttendancePage() {
                     <td className="px-3 py-2">{formatHours(item.work_hours)}</td>
                     <td className="px-3 py-2">{formatHours(item.overtime_hours)}</td>
                     <td className="px-3 py-2">
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          className="text-slate-700 underline"
-                          onClick={() => {
-                            setFormError(null);
-                            setEditor(item);
-                          }}
-                        >
-                          수정
-                        </button>
-                        <button
-                          type="button"
-                          className="text-rose-700 underline"
-                          onClick={() => {
-                            if (window.confirm("이 근태 기록을 삭제할까요?")) {
-                              deleteMutation.mutate(item.id);
-                            }
-                          }}
-                        >
-                          삭제
-                        </button>
-                      </div>
+                      {canWrite ? (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            className="text-slate-700 underline"
+                            onClick={() => {
+                              setFormError(null);
+                              setEditor(item);
+                            }}
+                          >
+                            수정
+                          </button>
+                          <button
+                            type="button"
+                            className="text-rose-700 underline"
+                            onClick={() => {
+                              if (window.confirm("이 근태 기록을 삭제할까요?")) {
+                                deleteMutation.mutate(item.id);
+                              }
+                            }}
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">조회</span>
+                      )}
                     </td>
                   </tr>
                 ))}

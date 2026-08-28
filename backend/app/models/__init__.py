@@ -5,6 +5,7 @@ from app.models.employee import Employee, EmployeeStatus
 from app.models.factory import Factory
 from app.models.production_line import ProductionLine
 from app.models.shift import Shift
+from app.models.user import User, UserRole
 
 __all__ = [
     "Attendance",
@@ -16,5 +17,7 @@ __all__ = [
     "Factory",
     "ProductionLine",
     "Shift",
+    "User",
+    "UserRole",
 ]
 

@@ -30,6 +30,20 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-3.1-flash-lite
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "60"
+      - key: BOOTSTRAP_ADMIN_USERNAME
+        value: admin
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+      - key: DEMO_VIEWER_USERNAME
+        value: viewer
+      - key: DEMO_VIEWER_PASSWORD
+        value: viewer-demo
 
   - type: web
     name: factoryhr-frontend

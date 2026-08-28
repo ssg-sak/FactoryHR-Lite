@@ -16,6 +16,7 @@ from app.models import (
     ProductionLine,
     Shift,
 )
+from app.services.user_bootstrap import bootstrap_managed_accounts
 
 RANDOM_SEED = 20260828
 ATTENDANCE_END_DATE = date(2026, 8, 27)
@@ -194,6 +195,11 @@ def seed_attendance(session: Session, employees: list[Employee]) -> int:
 
 def run_seed() -> None:
     with SessionLocal() as session:
+        accounts = bootstrap_managed_accounts(session)
+        session.commit()
+        if accounts:
+            print("Managed accounts upserted: " + ", ".join(accounts))
+
         existing_employees = session.scalar(select(func.count(Employee.id))) or 0
         if existing_employees:
             print(f"Seed skipped: employees table already has {existing_employees} rows.")

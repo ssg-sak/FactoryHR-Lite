@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     frontend_url: str = ""
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.1-flash-lite"
+    jwt_secret: str = ""
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+    bootstrap_admin_username: str = "admin"
+    bootstrap_admin_password: str = ""
+    demo_viewer_username: str = "viewer"
+    demo_viewer_password: str = ""
 
     @field_validator("database_url", mode="before")
     @classmethod
