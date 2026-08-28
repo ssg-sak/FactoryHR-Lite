@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import { AuthProvider } from "@/components/auth/AuthContext";
 import { WorkforceFilterProvider } from "@/components/filters/WorkforceFilterContext";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -15,7 +16,9 @@ export function Providers({ children }: { children: ReactNode }) {
   );
   return (
     <QueryClientProvider client={client}>
-      <WorkforceFilterProvider>{children}</WorkforceFilterProvider>
+      <AuthProvider>
+        <WorkforceFilterProvider>{children}</WorkforceFilterProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

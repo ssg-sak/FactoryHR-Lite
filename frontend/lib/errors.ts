@@ -22,6 +22,12 @@ const MESSAGE_MAP: Record<string, string> = {
     "기존 근태가 새 입사일보다 이전입니다.",
   "Existing attendance is after the new resigned_at":
     "기존 근태가 새 퇴사일보다 이후입니다.",
+  "Invalid username or password": "사용자 이름 또는 비밀번호가 올바르지 않습니다.",
+  "This account is inactive": "비활성화된 계정입니다.",
+  "Not authenticated": "로그인이 필요합니다.",
+  "Admin role required": "관리자 권한이 필요합니다.",
+  "Token has expired": "로그인 시간이 만료되었습니다. 다시 로그인하세요.",
+  "Could not validate credentials": "인증 정보를 확인할 수 없습니다.",
 };
 
 const FIELD_LABEL: Record<string, string> = {
@@ -82,6 +88,12 @@ export function formatApiError(status: number, detail: unknown): string {
         return field ? `${field}: ${translate(msg)}` : translate(msg);
       })
       .join(" ");
+  }
+  if (status === 401) {
+    return typeof detail === "string" ? translate(detail) : "로그인이 필요합니다.";
+  }
+  if (status === 403) {
+    return typeof detail === "string" ? translate(detail) : "이 작업을 수행할 권한이 없습니다.";
   }
   if (status === 422) {
     return "입력값을 확인하세요.";

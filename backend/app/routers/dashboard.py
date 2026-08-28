@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import CurrentUser
 from app.query import WorkforceQuery
 from app.schemas.dashboard import (
     AttendanceTrendResponse,
@@ -32,6 +33,7 @@ DbSession = Annotated[Session, Depends(get_db)]
 )
 def dashboard_summary(
     db: DbSession,
+    _user: CurrentUser,
     date_from: date | None = None,
     date_to: date | None = None,
     department_id: Annotated[int | None, Query(gt=0)] = None,
@@ -56,7 +58,7 @@ def dashboard_summary(
     summary="재직 인원 분포와 기간 내 퇴사 인원",
 )
 def workforce_distribution(
-    db: DbSession, filters: WorkforceQuery
+    db: DbSession, filters: WorkforceQuery, _user: CurrentUser
 ) -> dict[str, object]:
     return get_workforce_distribution(db, filters)
 
@@ -66,7 +68,9 @@ def workforce_distribution(
     response_model=AttendanceTrendResponse,
     summary="날짜별 근태 추이",
 )
-def attendance_trend(db: DbSession, filters: WorkforceQuery) -> dict[str, object]:
+def attendance_trend(
+    db: DbSession, filters: WorkforceQuery, _user: CurrentUser
+) -> dict[str, object]:
     return get_attendance_trend(db, filters)
 
 
@@ -75,7 +79,9 @@ def attendance_trend(db: DbSession, filters: WorkforceQuery) -> dict[str, object
     response_model=OvertimeSummaryResponse,
     summary="생산라인·교대조별 평균 잔업",
 )
-def overtime_summary(db: DbSession, filters: WorkforceQuery) -> dict[str, object]:
+def overtime_summary(
+    db: DbSession, filters: WorkforceQuery, _user: CurrentUser
+) -> dict[str, object]:
     return get_overtime_summary(db, filters)
 
 
@@ -84,7 +90,9 @@ def overtime_summary(db: DbSession, filters: WorkforceQuery) -> dict[str, object
     response_model=TenureDistributionResponse,
     summary="재직 직원 근속기간 분포",
 )
-def tenure_distribution(db: DbSession, filters: WorkforceQuery) -> dict[str, object]:
+def tenure_distribution(
+    db: DbSession, filters: WorkforceQuery, _user: CurrentUser
+) -> dict[str, object]:
     return get_tenure_distribution(db, filters)
 
 
@@ -93,5 +101,5 @@ def tenure_distribution(db: DbSession, filters: WorkforceQuery) -> dict[str, obj
     response_model=DataQualityResponse,
     summary="데이터베이스 정합성 검사 결과",
 )
-def data_quality(db: DbSession) -> dict[str, int]:
+def data_quality(db: DbSession, _user: CurrentUser) -> dict[str, int]:
     return get_data_quality(db)
