@@ -18,27 +18,35 @@ def normalize_database_url(url: str) -> str:
 
 class Settings(BaseSettings):
     app_name: str = "FactoryHR Lite API"
-    database_url: str = (
-        "postgresql+psycopg://factoryhr:factoryhr@localhost:5432/factoryhr"
-    )
+    database_url: str
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
     frontend_url: str = ""
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.1-flash-lite"
-    jwt_secret: str = ""
+    jwt_secret: str
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     bootstrap_admin_username: str = "admin"
     bootstrap_admin_password: str = ""
     demo_viewer_username: str = "viewer"
-    demo_viewer_password: str = "viewer-demo"
+    demo_viewer_password: str = ""
 
     @field_validator("database_url", mode="before")
     @classmethod
     def coerce_database_url(cls, value: object) -> object:
         if isinstance(value, str):
-            return normalize_database_url(value)
+            text = value.strip()
+            if not text:
+                raise ValueError("DATABASE_URL must be set")
+            return normalize_database_url(text)
         return value
+
+    @field_validator("jwt_secret", mode="before")
+    @classmethod
+    def require_jwt_secret(cls, value: object) -> object:
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("JWT_SECRET must be set")
+        return value.strip()
 
     @field_validator("cors_origins", mode="before")
     @classmethod
