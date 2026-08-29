@@ -45,7 +45,7 @@ services:
       - key: DEMO_VIEWER_USERNAME
         value: viewer
       - key: DEMO_VIEWER_PASSWORD
-        value: viewer-demo
+        sync: false
 
   - type: web
     name: factoryhr-frontend
