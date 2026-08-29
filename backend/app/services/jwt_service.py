@@ -1,5 +1,4 @@
 from datetime import UTC, datetime, timedelta
-from hashlib import sha256
 from typing import Any
 
 import jwt
@@ -11,13 +10,7 @@ INVALID_TOKEN_DETAIL = "Could not validate credentials"
 
 
 def signing_secret() -> str:
-    configured = (settings.jwt_secret or "").strip()
-    if configured:
-        return configured
-    # Existing Render services do not pick up blueprint generateValue.
-    # Derive a stable per-environment secret so login works without Dashboard clicks.
-    material = f"{settings.database_url}\0{settings.jwt_algorithm}\0factoryhr-lite-jwt"
-    return sha256(material.encode("utf-8")).hexdigest()
+    return settings.jwt_secret
 
 
 def create_access_token(*, username: str, role: str) -> str:
