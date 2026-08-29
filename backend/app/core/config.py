@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     frontend_url: str = ""
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.1-flash-lite"
-    jwt_secret: str
+    jwt_secret: str = ""
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     bootstrap_admin_username: str = "admin"
@@ -43,10 +43,10 @@ class Settings(BaseSettings):
 
     @field_validator("jwt_secret", mode="before")
     @classmethod
-    def require_jwt_secret(cls, value: object) -> object:
-        if not isinstance(value, str) or not value.strip():
-            raise ValueError("JWT_SECRET must be set")
-        return value.strip()
+    def normalize_jwt_secret(cls, value: object) -> object:
+        if isinstance(value, str):
+            return value.strip()
+        return value
 
     @field_validator("cors_origins", mode="before")
     @classmethod
