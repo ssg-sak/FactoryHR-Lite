@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from hashlib import sha256
 from typing import Any
 
 import jwt
@@ -10,7 +11,11 @@ INVALID_TOKEN_DETAIL = "Could not validate credentials"
 
 
 def signing_secret() -> str:
-    return settings.jwt_secret
+    configured = (settings.jwt_secret or "").strip()
+    if configured:
+        return configured
+    material = f"{settings.database_url}\0{settings.jwt_algorithm}\0factoryhr-lite-jwt"
+    return sha256(material.encode("utf-8")).hexdigest()
 
 
 def create_access_token(*, username: str, role: str) -> str:
