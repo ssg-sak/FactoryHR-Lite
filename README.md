@@ -18,21 +18,13 @@ Employee / Attendance
 
 ![대시보드](docs/images/dashboard.png)
 
-| | 검증된 값 |
+| 검증 영역 | 확인 내용 |
 |---|---|
-| Seed | 직원 **50**, 근태 **1,070** (2026-07-29 ~ 2026-08-27) |
-| Backend pytest | **49 passed** in 27.16s |
-| Frontend vitest | **10 passed** |
-| Playwright smoke | **4 passed** (8.9s), Compose `http://127.0.0.1:3000`, `admin` / `admin-local` |
-| lint / typecheck / build | passed (Next.js 15.5.24) |
-| Alembic | `20260828_0003` (head), `alembic check` 통과 |
-| PDF | Compose Docker 200, 141,032 bytes. 이전 Windows 로컬 200, 203,751 bytes. KPI 46 / 4 / 32.8 / 0.35 / 3.46 / 6.92 일치 |
-| CSV | UTF-8 BOM, 직원·근태 실제 생성 |
-| AI | 키 없음 → `503`. 이 Compose는 키 있어 200. 모델 `gemini-3.1-flash-lite` |
-| GitHub Actions | main CI **success** ([run 33157470728](https://github.com/ssg-sak/FactoryHR-Lite/actions/runs/33157470728), 1m20s). PR #1도 [success](https://github.com/ssg-sak/FactoryHR-Lite/actions/runs/33157150339) |
-| Docker Compose | 2026-08-28 재빌드 확인. db `5434:5432`, API 8000, web 3000. `/health` 200, admin/viewer 로그인, viewer 쓰기 403 |
-| Authentication | Argon2 + JWT access. 공개 회원가입 없음. viewer/admin. `/signup` 없음 |
-| Live Demo | [Web](https://factoryhr-frontend.onrender.com/) · [로그인](https://factoryhr-frontend.onrender.com/login) · [API `/health`](https://factoryhr-backend.onrender.com/health). 데모 `viewer` / `viewer-demo` |
+| **데이터** | 합성 직원 **50명**, 근태 **1,070건**으로 CRUD·KPI·보고서 흐름 확인 |
+| **데이터 품질** | 중복·근무시간·입퇴사 기간·공장-라인 등 **7개 정합성 항목**, 위반 **0건** |
+| **테스트 / CI** | 백엔드·프론트·주요 사용자 흐름과 lint·typecheck·build 통과 · [main CI](https://github.com/ssg-sak/FactoryHR-Lite/actions/runs/33157470728) |
+| **인증 / 권한** | Argon2 + JWT, viewer/admin 분리, viewer의 변경 요청은 `403` |
+| **배포 / 리포트** | Docker Compose·Render에서 `/health` 200, PDF/CSV 생성과 AI 요약 경로 확인 |
 
 ## 목차
 
