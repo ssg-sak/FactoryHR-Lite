@@ -106,6 +106,16 @@ seed 기간 전체 조회에서 확인한 값: 재직 46, 기간 내 퇴사 4, �
 - PDF: 표지 → 핵심 지표 → 인력 구성 → 근태·잔업 → 근속·퇴사 → 정합성 → 정의와 한계
 - CSV: UTF-8 BOM
 - AI: 계산된 KPI JSON만 Gemini에 전달. 키 없으면 이 API만 `503`
+- JSON에는 숫자와 함께 `metric_definitions`가 들어갑니다. 직원 원문 테이블은 보내지 않습니다.
+
+| JSON 키 | 정의 |
+|---|---|
+| `active_employees` | `status=active` 직원 수 |
+| `resigned_in_period` | 선택 기간 `resigned_at`인 퇴사자 수 |
+| `average_tenure_months` | 근속일 / 30.4375 |
+| `average_overtime_hours` | 선택 기간 잔업시간 평균 |
+| `absence_rate` | 선택 기간 근태 중 결근 비율(%) |
+| `late_rate` | 선택 기간 근태 중 지각 비율(%) |
 
 ### Authentication / Authorization
 
